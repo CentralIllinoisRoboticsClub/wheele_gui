@@ -15,8 +15,8 @@
 // Calibration data for the raw touch data to the screen coordinates
 //#define PRINT_RAW_TOUCHPOINT
 #define TS_MINX 105
-#define TS_MAXX 565
-#define TS_MINY 340
+#define TS_MAXX 595
+#define TS_MINY 305
 #define TS_MAXY 940
 
 // For better pressure precision, we need to know the resistance
@@ -25,6 +25,7 @@
 #define TS_RES_OHMS 300
 
 #define BUTTON_DEBOUNCE_MS 250
+#define DRIVE_RC_REFRESH_MS 40 // 25Hz
 
 // Touchscreen objects
 Adafruit_ILI9341 screen = Adafruit_ILI9341(TFT_CS, TFT_DC);
@@ -133,6 +134,16 @@ void loop() {
       }
       break;
 
+    case DRIVE_RC_SCREEN:
+      update_drive_rc_screen(screen);
+      if((current_time - button_press_time) > DRIVE_RC_REFRESH_MS){
+        if(touch_detected(point)){
+          button_press_time = current_time;
+          new_screen = touch_drive_rc_screen(screen,point);
+        }
+      }
+      break;
+      
     default:
       break;
   }
@@ -149,6 +160,10 @@ void loop() {
 
       case WAYPOINTS_SCREEN:
         draw_waypoints_screen(screen);
+        break;
+
+      case DRIVE_RC_SCREEN:
+        draw_drive_rc_screen(screen);
         break;
 
       default:

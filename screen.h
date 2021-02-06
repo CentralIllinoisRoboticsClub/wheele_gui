@@ -13,6 +13,7 @@
 #define SCREEN_COLOR_RED       ILI9341_RED
 #define SCREEN_COLOR_WHITE     ILI9341_WHITE
 #define SCREEN_COLOR_GREEN     ILI9341_GREEN
+#define SCREEN_COLOR_YELLOW    ILI9341_YELLOW
 #endif
 
 #define SCREEN_TITLE_COLOR SCREEN_COLOR_BLUE
@@ -23,7 +24,8 @@
 enum {
   HOME_SCREEN,
   SHUTDOWN_SCREEN,
-  WAYPOINTS_SCREEN
+  WAYPOINTS_SCREEN,
+  DRIVE_RC_SCREEN
 }screen_id;
 
 class Box{
@@ -67,6 +69,15 @@ public:
   void set_label(String label, uint16_t color = SCREEN_COLOR_BLACK){
     this->label = label;
     this->label_color = color;
+  }
+
+  void set_color(uint16_t color){
+    this->color = color;
+  }
+
+  void set_position(uint16_t x0, uint16_t y0){
+    this->x = x0;
+    this->y = y0;
   }
 
 protected:
@@ -151,4 +162,8 @@ void update_waypoints_screen(Adafruit_ILI9341& screen);
 void draw_shutdown_screen(Adafruit_ILI9341& screen);
 int touch_shutdown_screen(Adafruit_ILI9341& screen, TSPoint& p);
 void update_shutdown_screen(Adafruit_ILI9341& screen);
+
+void draw_drive_rc_screen(Adafruit_ILI9341& screen);
+int touch_drive_rc_screen(Adafruit_ILI9341& screen, TSPoint& p);
+void update_drive_rc_screen(Adafruit_ILI9341& screen);
 #endif
