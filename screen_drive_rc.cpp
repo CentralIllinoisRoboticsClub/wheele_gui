@@ -9,6 +9,8 @@
 #define CTRL_STICK_RADIUS 25
 #define CTRL_STICK_X (CTRL_SURFACE_X + (CTRL_SURFACE_WIDTH/2) - CTRL_STICK_RADIUS)
 #define CTRL_STICK_Y (CTRL_SURFACE_Y + (CTRL_SURFACE_HEIGHT/2) - CTRL_STICK_RADIUS)
+#define ORIGIN_X_VERTICAL (CTRL_SURFACE_X + (CTRL_SURFACE_WIDTH/2))
+#define ORIGIN_Y_HORIZONTAL (CTRL_SURFACE_Y + (CTRL_SURFACE_HEIGHT/2))
 
 static Box back_button(10,5,30,20,SCREEN_COLOR_RED);
 static Box auto_mode_button(10,85,100,40,SCREEN_COLOR_BLACK,true);
@@ -45,6 +47,7 @@ void draw_drive_rc_screen(Adafruit_ILI9341& screen){
 
 int touch_drive_rc_screen(Adafruit_ILI9341& screen, TSPoint& p)
 {
+  unsigned int radius_x,radius_y,radius;
   int new_screen = DRIVE_RC_SCREEN; // default no change
 
   if(back_button.touched(p)){
@@ -58,9 +61,21 @@ int touch_drive_rc_screen(Adafruit_ILI9341& screen, TSPoint& p)
         joystick.draw(screen);
         screen.drawFastVLine(CTRL_SURFACE_X + (CTRL_SURFACE_WIDTH/2), CTRL_SURFACE_Y, CTRL_SURFACE_HEIGHT, SCREEN_COLOR_BLUE);
         screen.drawFastHLine(CTRL_SURFACE_X, CTRL_SURFACE_Y + (CTRL_SURFACE_HEIGHT/2), CTRL_SURFACE_WIDTH, SCREEN_COLOR_BLUE);
-        screen.drawFastVLine(p.x, CTRL_SURFACE_Y, CTRL_SURFACE_HEIGHT, SCREEN_COLOR_RED);
-        screen.drawFastHLine(CTRL_SURFACE_X, p.y, CTRL_SURFACE_WIDTH, SCREEN_COLOR_RED);    
-        //screen.fillCircle(p.x,p.y,CTRL_STICK_RADIUS,SCREEN_COLOR_RED);
+
+        if(p.x > ORIGIN_X_VERTICAL)
+          radius_x = min(CTRL_SURFACE_X+CTRL_SURFACE_WIDTH-1 - p.x, CTRL_STICK_RADIUS);
+        else
+          radius_x = min(p.x - CTRL_SURFACE_X, CTRL_STICK_RADIUS);
+
+        if(p.y > ORIGIN_Y_HORIZONTAL)
+          radius_y = min(CTRL_SURFACE_Y+CTRL_SURFACE_HEIGHT-1 - p.y, CTRL_STICK_RADIUS);
+        else
+          radius_y = min(p.y - CTRL_SURFACE_Y, CTRL_STICK_RADIUS);
+
+        radius = min(min(radius_x,radius_y),CTRL_STICK_RADIUS);
+        screen.fillCircle(p.x,p.y,radius,SCREEN_COLOR_RED);
+        screen.drawFastVLine(p.x, CTRL_SURFACE_Y, CTRL_SURFACE_HEIGHT, SCREEN_COLOR_YELLOW);
+        screen.drawFastHLine(CTRL_SURFACE_X, p.y, CTRL_SURFACE_WIDTH, SCREEN_COLOR_YELLOW); 
         control_stick_time = millis();
       }
     }
@@ -73,6 +88,8 @@ int touch_drive_rc_screen(Adafruit_ILI9341& screen, TSPoint& p)
     manual_mode_button.set_color(SCREEN_COLOR_BLACK);
     manual_mode_button.draw(screen);    
     screen.fillCircle(CTRL_SURFACE_X + (CTRL_SURFACE_WIDTH/2),CTRL_SURFACE_Y + (CTRL_SURFACE_HEIGHT/2),CTRL_STICK_RADIUS,SCREEN_COLOR_LIGHTGREY);
+    screen.drawFastVLine(CTRL_SURFACE_X + (CTRL_SURFACE_WIDTH/2), CTRL_SURFACE_Y, CTRL_SURFACE_HEIGHT, SCREEN_COLOR_BLUE);
+    screen.drawFastHLine(CTRL_SURFACE_X, CTRL_SURFACE_Y + (CTRL_SURFACE_HEIGHT/2), CTRL_SURFACE_WIDTH, SCREEN_COLOR_BLUE);
   }
 
   if(manual_mode_button.touched(p)){
@@ -82,6 +99,8 @@ int touch_drive_rc_screen(Adafruit_ILI9341& screen, TSPoint& p)
     manual_mode_button.set_color(SCREEN_COLOR_YELLOW);
     manual_mode_button.draw(screen);    
     screen.fillCircle(CTRL_SURFACE_X + (CTRL_SURFACE_WIDTH/2),CTRL_SURFACE_Y + (CTRL_SURFACE_HEIGHT/2),CTRL_STICK_RADIUS,SCREEN_COLOR_YELLOW);
+    screen.drawFastVLine(CTRL_SURFACE_X + (CTRL_SURFACE_WIDTH/2), CTRL_SURFACE_Y, CTRL_SURFACE_HEIGHT, SCREEN_COLOR_BLUE);
+    screen.drawFastHLine(CTRL_SURFACE_X, CTRL_SURFACE_Y + (CTRL_SURFACE_HEIGHT/2), CTRL_SURFACE_WIDTH, SCREEN_COLOR_BLUE);
   }
   
   return new_screen;
