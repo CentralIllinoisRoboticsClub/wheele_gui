@@ -87,7 +87,7 @@ bool touch_detected_test(TSPoint& point){
 //            //
 ////////////////
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(57600);
   Serial.print(F("Loading CIRC Wheele Display..."));
 
   screen.begin();

@@ -21,7 +21,10 @@ static Box control_stick(CTRL_STICK_X,CTRL_STICK_Y,CTRL_STICK_RADIUS*2,CTRL_STIC
 static unsigned long control_stick_time;
 static unsigned long update_time;
 static unsigned int manual_mode_enabled;
-
+static unsigned int s_radius = CTRL_STICK_RADIUS;
+static int s_x = CTRL_SURFACE_X + (CTRL_SURFACE_WIDTH/2);
+static int s_y = CTRL_SURFACE_Y + (CTRL_SURFACE_HEIGHT/2);
+  
 void draw_drive_rc_screen(Adafruit_ILI9341& screen){
 
   screen.fillScreen(ILI9341_DARKGREY);
@@ -58,10 +61,15 @@ int touch_drive_rc_screen(Adafruit_ILI9341& screen, TSPoint& p)
     if(joystick.touched(p)){
       if(control_stick.touched(p)){
         control_stick.set_position(p.x - CTRL_STICK_RADIUS,p.y - CTRL_STICK_RADIUS);
-        joystick.draw(screen);
+
+        /* Erase previous position piecemeal instead of redrawing entire control surface, to improve screen refresh rate */
+        screen.drawFastVLine(s_x, CTRL_SURFACE_Y, CTRL_SURFACE_HEIGHT, SCREEN_COLOR_BLACK);
+        screen.drawFastHLine(CTRL_SURFACE_X, s_y, CTRL_SURFACE_WIDTH, SCREEN_COLOR_BLACK);
+        screen.fillCircle(s_x,s_y,s_radius,SCREEN_COLOR_BLACK);
         screen.drawFastVLine(CTRL_SURFACE_X + (CTRL_SURFACE_WIDTH/2), CTRL_SURFACE_Y, CTRL_SURFACE_HEIGHT, SCREEN_COLOR_BLUE);
         screen.drawFastHLine(CTRL_SURFACE_X, CTRL_SURFACE_Y + (CTRL_SURFACE_HEIGHT/2), CTRL_SURFACE_WIDTH, SCREEN_COLOR_BLUE);
 
+        /* Calculate new position and udpate screen */
         if(p.x > ORIGIN_X_VERTICAL)
           radius_x = min(CTRL_SURFACE_X+CTRL_SURFACE_WIDTH-1 - p.x, CTRL_STICK_RADIUS);
         else
@@ -75,8 +83,9 @@ int touch_drive_rc_screen(Adafruit_ILI9341& screen, TSPoint& p)
         radius = min(min(radius_x,radius_y),CTRL_STICK_RADIUS);
         screen.fillCircle(p.x,p.y,radius,SCREEN_COLOR_RED);
         screen.drawFastVLine(p.x, CTRL_SURFACE_Y, CTRL_SURFACE_HEIGHT, SCREEN_COLOR_YELLOW);
-        screen.drawFastHLine(CTRL_SURFACE_X, p.y, CTRL_SURFACE_WIDTH, SCREEN_COLOR_YELLOW); 
+        screen.drawFastHLine(CTRL_SURFACE_X, p.y, CTRL_SURFACE_WIDTH, SCREEN_COLOR_YELLOW);
         control_stick_time = millis();
+        s_x = p.x; s_y = p.y; s_radius = radius;
       }
     }
   }
@@ -113,10 +122,11 @@ void update_drive_rc_screen(Adafruit_ILI9341& screen){
     if((current_time - control_stick_time) > CONTROL_STICK_PERSISTENCE_MS){
       control_stick_time = 0;
       control_stick.set_position(CTRL_STICK_X,CTRL_STICK_Y);
-      joystick.draw(screen);
+      joystick.draw(screen);      
       screen.fillCircle(CTRL_SURFACE_X + (CTRL_SURFACE_WIDTH/2),CTRL_SURFACE_Y + (CTRL_SURFACE_HEIGHT/2),CTRL_STICK_RADIUS,SCREEN_COLOR_YELLOW);
       screen.drawFastVLine(CTRL_SURFACE_X + (CTRL_SURFACE_WIDTH/2), CTRL_SURFACE_Y, CTRL_SURFACE_HEIGHT, SCREEN_COLOR_BLUE);
       screen.drawFastHLine(CTRL_SURFACE_X, CTRL_SURFACE_Y + (CTRL_SURFACE_HEIGHT/2), CTRL_SURFACE_WIDTH, SCREEN_COLOR_BLUE);
+      s_x = CTRL_SURFACE_X + (CTRL_SURFACE_WIDTH/2); s_y = CTRL_SURFACE_Y + (CTRL_SURFACE_HEIGHT/2); s_radius = CTRL_STICK_RADIUS;
     }
   }
 }
