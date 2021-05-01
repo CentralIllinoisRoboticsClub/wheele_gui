@@ -88,6 +88,10 @@ int touch_drive_rc_screen(Adafruit_ILI9341& screen, TSPoint& p)
         s_x = p.x; s_y = p.y; s_radius = radius;
       }
     }
+
+    Serial.print(s_x);
+    Serial.print(",");
+    Serial.println(s_y);
   }
 
   if(auto_mode_button.touched(p)){
@@ -127,6 +131,9 @@ void update_drive_rc_screen(Adafruit_ILI9341& screen){
       screen.drawFastVLine(CTRL_SURFACE_X + (CTRL_SURFACE_WIDTH/2), CTRL_SURFACE_Y, CTRL_SURFACE_HEIGHT, SCREEN_COLOR_BLUE);
       screen.drawFastHLine(CTRL_SURFACE_X, CTRL_SURFACE_Y + (CTRL_SURFACE_HEIGHT/2), CTRL_SURFACE_WIDTH, SCREEN_COLOR_BLUE);
       s_x = CTRL_SURFACE_X + (CTRL_SURFACE_WIDTH/2); s_y = CTRL_SURFACE_Y + (CTRL_SURFACE_HEIGHT/2); s_radius = CTRL_STICK_RADIUS;
+      Serial.print(s_x);
+      Serial.print(",");
+      Serial.println(s_y);
     }
   }
 }
