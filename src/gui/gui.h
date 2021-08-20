@@ -32,7 +32,7 @@ enum{
   MAX_PAGE
 };
 
-void gui_init(void);
+void gui_init(gslc_tsGui *pGUI);
 void gui_update(void);
 
 void init_base_screen(gslc_tsGui* pGui);

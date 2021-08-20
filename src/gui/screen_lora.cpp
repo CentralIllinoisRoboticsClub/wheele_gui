@@ -1,4 +1,5 @@
 #include "gui.h"
+#include "../radio/radio.h"
 
 #define THIS_PAGE E_PG_LORA
 
@@ -9,6 +10,7 @@
 #define DEC_BUTTON_COORDS (gslc_tsRect){20,100,BUTTON_WIDTH,BUTTON_HEIGHT}
 #define SAVE_BUTTON_COORDS (gslc_tsRect){20,140,BUTTON_WIDTH,BUTTON_HEIGHT}
 #define REVERT_BUTTON_COORDS (gslc_tsRect){20,180,BUTTON_WIDTH,BUTTON_HEIGHT}
+#define TEST_BUTTON_COORDS (gslc_tsRect){120,60,BUTTON_WIDTH,BUTTON_HEIGHT}
 //#define SETUP_BUTTON_COORDS (gslc_tsRect){20,120,BUTTON_WIDTH,BUTTON_HEIGHT}
 
 enum{
@@ -17,13 +19,24 @@ enum{
   E_ELEM_BTN_DEC,
   E_ELEM_BTN_SAVE,
   E_ELEM_BTN_REVERT,
+  E_ELEM_BTN_TEST,
   MAX_ELEM
 };
 
 static gslc_tsElem    s_Elem[MAX_ELEM];
 static gslc_tsElemRef s_ElemRef[MAX_ELEM];
+static char test_buffer[16] = "Hello World    ";
 
 // Button callbacks
+static bool CbBtnTest(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
+{
+   if (eTouch == GSLC_TOUCH_UP_IN){
+      Serial.println("Radio Test");
+      radio_tx(test_buffer,16);
+   }
+   return true;
+}
+
 static bool CbBtnLora(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
   gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
@@ -86,6 +99,12 @@ void init_lora_screen(gslc_tsGui* pGui)
   // Revert to Previous Channel
   pElemRef = gslc_ElemCreateBtnTxt(pGui,E_ELEM_BTN_REVERT,THIS_PAGE,
     REVERT_BUTTON_COORDS,(char*)"REVERT",0,E_FONT_BTN,&CbBtnLora);
+  gslc_ElemSetCol(pGui,pElemRef,GSLC_COL_BLUE,GSLC_COL_BLACK,GSLC_COL_YELLOW);
+  gslc_ElemSetRoundEn(pGui,pElemRef,true);
+
+  // Test radio transmisson
+  pElemRef = gslc_ElemCreateBtnTxt(pGui,E_ELEM_BTN_TEST,THIS_PAGE,
+    TEST_BUTTON_COORDS,(char*)"TEST",0,E_FONT_BTN,&CbBtnTest);
   gslc_ElemSetCol(pGui,pElemRef,GSLC_COL_BLUE,GSLC_COL_BLACK,GSLC_COL_YELLOW);
   gslc_ElemSetRoundEn(pGui,pElemRef,true);
 }
