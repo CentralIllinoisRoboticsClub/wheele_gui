@@ -30,7 +30,7 @@ void draw_home_screen(Adafruit_ILI9341& screen){
   // shutdown button
   shutdown_button.set_label(String("Shutdown"),SCREEN_COLOR_RED);
   shutdown_button.draw(screen);
-  
+
   // enter waypoint button
   waypoints_button.set_label(String("Waypoints"),SCREEN_COLOR_RED);
   waypoints_button.draw(screen);
@@ -46,16 +46,16 @@ void draw_home_screen(Adafruit_ILI9341& screen){
 
 int touch_home_screen(Adafruit_ILI9341& screen, TSPoint& p){
   int new_screen = HOME_SCREEN; // default no change
-  
+
   // shutdown button
   if(shutdown_button.touched(p)){
       new_screen = SHUTDOWN_SCREEN;
   }
-  
+
   // enter waypoint button
   if(waypoints_button.touched(p)){
       new_screen = WAYPOINTS_SCREEN;
-  } 
+  }
 
   // RC drive button
   if(drive_rc_button.touched(p)){
