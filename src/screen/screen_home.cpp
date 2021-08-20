@@ -1,66 +1,90 @@
-#include "screen.h"
+#include "gui.h"
 
-#define BUTTON_SIZE_X 120
-#define BUTTON_SIZE_Y 40
-#define BUTTON_RADIUS 5
+#define THIS_PAGE E_PG_HOME
+#define MAX_ELEM_PG_HOME   15 // Max # of elements on main page
 
-#define SHUTDOWN_BUTTON_X 20
-#define SHUTDOWN_BUTTON_Y 60
-#define WAYPOINTS_BUTTON_X 20
-#define WAYPOINTS_BUTTON_Y 120
-#define START_BUTTON_X 20
-#define START_BUTTON_Y 180
-#define RC_DRIVE_BUTTON_X 160
-#define RC_DRIVE_BUTTON_Y 60
+#define BUTTON_WIDTH 120
+#define BUTTON_HEIGHT 40
 
-static Box shutdown_button(SHUTDOWN_BUTTON_X,SHUTDOWN_BUTTON_Y,BUTTON_SIZE_X,BUTTON_SIZE_Y,SCREEN_COLOR_BLACK, true);
-static Box waypoints_button(WAYPOINTS_BUTTON_X,WAYPOINTS_BUTTON_Y,BUTTON_SIZE_X,BUTTON_SIZE_Y,SCREEN_COLOR_BLACK, true);
-static Box path_ready_button(START_BUTTON_X,START_BUTTON_Y,BUTTON_SIZE_X,BUTTON_SIZE_Y,SCREEN_COLOR_BLACK, true);
-static Box drive_rc_button(RC_DRIVE_BUTTON_X,RC_DRIVE_BUTTON_Y,BUTTON_SIZE_X,BUTTON_SIZE_Y,SCREEN_COLOR_BLACK, true);
+#define SETUP_BUTTON_COORDS (gslc_tsRect){20,60,BUTTON_WIDTH,BUTTON_HEIGHT}
+#define WAYPOINTS_BUTTON_COORDS (gslc_tsRect){20,120,BUTTON_WIDTH,BUTTON_HEIGHT}
+#define CONTROL_BUTTON_COORDS (gslc_tsRect){160,60,BUTTON_WIDTH,BUTTON_HEIGHT}
+#define SHUTDOWN_BUTTON_COORDS (gslc_tsRect){160,120,BUTTON_WIDTH,BUTTON_HEIGHT}
 
-void draw_home_screen(Adafruit_ILI9341& screen){
+static gslc_tsElem    m_asHomeElem[MAX_ELEM_PG_HOME];
+static gslc_tsElemRef m_asHomeElemRef[MAX_ELEM_PG_HOME];
 
-  screen.fillScreen(ILI9341_DARKGREY);
-  screen.setCursor(40,10);
-  screen.setTextSize(2);
-  screen.setTextColor(SCREEN_TITLE_COLOR);
-  screen.print(F("WheelE Control Panel"));
-  screen.fillRect(0,SCREEN_TITLE_BAR_Y,320,SCREEN_TITLE_BAR_HEIGHT,SCREEN_TITLE_BAR_COLOR);
-
-  // shutdown button
-  shutdown_button.set_label(String("Shutdown"),SCREEN_COLOR_RED);
-  shutdown_button.draw(screen);
-
-  // enter waypoint button
-  waypoints_button.set_label(String("Waypoints"),SCREEN_COLOR_RED);
-  waypoints_button.draw(screen);
-
-  // start journey
-  path_ready_button.set_label(String("Path"),SCREEN_COLOR_RED);
-  path_ready_button.draw(screen);
-
-  // rc drive button
-  drive_rc_button.set_label(String("Drive RC"),SCREEN_COLOR_RED);
-  drive_rc_button.draw(screen);
+// Button callbacks
+bool CbBtnSetup(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
+{
+   gslc_tsGui *pGui = (gslc_tsGui*)(pvGui);
+   if (eTouch == GSLC_TOUCH_UP_IN) {
+      gslc_SetPageCur(pGui,E_PG_SETUP);
+   }
+   return true;
 }
 
-int touch_home_screen(Adafruit_ILI9341& screen, TSPoint& p){
-  int new_screen = HOME_SCREEN; // default no change
+bool CbBtnWaypoints(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
+{
+   gslc_tsGui *pGui = (gslc_tsGui*)(pvGui);
+   if (eTouch == GSLC_TOUCH_UP_IN) {
+      gslc_SetPageCur(pGui,E_PG_WAYPOINTS);
+   }
+   return true;
+}
 
-  // shutdown button
-  if(shutdown_button.touched(p)){
-      new_screen = SHUTDOWN_SCREEN;
-  }
+bool CbBtnControl(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
+{
+   gslc_tsGui *pGui = (gslc_tsGui*)(pvGui);
+   if (eTouch == GSLC_TOUCH_UP_IN) {
+      gslc_SetPageCur(pGui,E_PG_CONTROL);
+   }
+   return true;
+}
 
-  // enter waypoint button
-  if(waypoints_button.touched(p)){
-      new_screen = WAYPOINTS_SCREEN;
-  }
+bool CbBtnShutdown(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
+{
+   gslc_tsGui *pGui = (gslc_tsGui*)(pvGui);
+   if (eTouch == GSLC_TOUCH_UP_IN) {
+      gslc_SetPageCur(pGui,E_PG_SHUTDOWN);
+   }
+   return true;
+}
 
-  // RC drive button
-  if(drive_rc_button.touched(p)){
-      new_screen = DRIVE_RC_SCREEN;
-  }
+void init_home_screen(gslc_tsGui* pGui)
+{
+  gslc_tsElemRef* pElemRef = NULL;
 
-  return new_screen;
+  gslc_PageAdd(pGui,E_PG_HOME,m_asHomeElem,MAX_ELEM_PG_HOME,m_asHomeElemRef,MAX_ELEM_PG_HOME);
+
+  // TITLE
+  pElemRef = gslc_ElemCreateTxt(pGui,GSLC_ID_AUTO,THIS_PAGE,
+    TITLE_COORDS,(char*)"Wheele Control Panel",0,E_FONT_TITLE);
+  gslc_ElemSetCol(pGui,pElemRef,GSLC_COL_BLUE,GUI_COL_BKGND,GSLC_COL_BLUE);
+  gslc_ElemSetTxtCol(pGui,pElemRef,GSLC_COL_BLUE);
+
+  // SETUP
+  pElemRef = gslc_ElemCreateBtnTxt(pGui,GSLC_ID_AUTO,THIS_PAGE,
+    SETUP_BUTTON_COORDS,(char*)"SETUP",0,E_FONT_BTN,&CbBtnSetup);
+  gslc_ElemSetCol(pGui,pElemRef,GSLC_COL_BLUE,GSLC_COL_BLACK,GSLC_COL_YELLOW);
+  gslc_ElemSetRoundEn(pGui,pElemRef,true);
+
+  // WAYPOINTS
+  pElemRef = gslc_ElemCreateBtnTxt(pGui,GSLC_ID_AUTO,THIS_PAGE,
+    WAYPOINTS_BUTTON_COORDS,(char*)"WAYPOINTS",0,E_FONT_BTN,&CbBtnWaypoints);
+  gslc_ElemSetCol(pGui,pElemRef,GSLC_COL_BLUE,GSLC_COL_BLACK,GSLC_COL_YELLOW);
+  gslc_ElemSetRoundEn(pGui,pElemRef,true);
+
+  // CONTROL
+  pElemRef = gslc_ElemCreateBtnTxt(pGui,GSLC_ID_AUTO,THIS_PAGE,
+    CONTROL_BUTTON_COORDS,(char*)"CONTROL",0,E_FONT_BTN,&CbBtnControl);
+  gslc_ElemSetCol(pGui,pElemRef,GSLC_COL_BLUE,GSLC_COL_BLACK,GSLC_COL_YELLOW);
+  gslc_ElemSetRoundEn(pGui,pElemRef,true);
+
+  // SHUTDOWN
+  pElemRef = gslc_ElemCreateBtnTxt(pGui,GSLC_ID_AUTO,THIS_PAGE,
+    SHUTDOWN_BUTTON_COORDS,(char*)"SHUTDOWN",0,E_FONT_BTN,&CbBtnShutdown);
+  gslc_ElemSetCol(pGui,pElemRef,GSLC_COL_BLUE,GSLC_COL_BLACK,GSLC_COL_YELLOW);
+  gslc_ElemSetRoundEn(pGui,pElemRef,true);
+
 }

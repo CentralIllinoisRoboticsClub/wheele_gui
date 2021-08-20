@@ -53,7 +53,7 @@ public:
       screen.setTextColor(label_color);
       screen.setTextSize(2);
       screen.setCursor(x+x_pad,y+y_pad);
-      screen.print(label);      
+      screen.print(label);
     }
   }
 
@@ -99,7 +99,7 @@ public:
     this->max_value = max_value;
   }
   ~Numberbox(){}
-  
+
   void highlight(Adafruit_ILI9341& screen){
     if(!rounded){
       screen.drawRect(x,y,w,h,SCREEN_COLOR_RED);
@@ -118,7 +118,7 @@ public:
 
   void update_value(uint16_t number){
     uint16_t y;
-    
+
     if(value == 0)
       y = number;
     else if(value < 100)
@@ -139,7 +139,7 @@ public:
       offset = 15;
     else
       offset = 3;
-      
+
     this->draw(screen);
     screen.setTextColor(SCREEN_COLOR_BLACK);
     screen.setTextSize(2);
@@ -166,4 +166,5 @@ void update_shutdown_screen(Adafruit_ILI9341& screen);
 void draw_drive_rc_screen(Adafruit_ILI9341& screen);
 int touch_drive_rc_screen(Adafruit_ILI9341& screen, TSPoint& p);
 void update_drive_rc_screen(Adafruit_ILI9341& screen);
+
 #endif
