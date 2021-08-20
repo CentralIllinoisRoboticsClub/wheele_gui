@@ -1,3 +1,4 @@
+#include <timeout.h>
 #include <RH_RF95.h>
 #include "src/screen/gui.h"
 
@@ -11,7 +12,7 @@
 #define HEARTBEAT_LED_DELAY_MS 500
 #define BUTTON_DEBOUNCE_MS 250
 #define DRIVE_RC_REFRESH_MS 40 // 25Hz
-#define SCREEN_UPDATE_RATE_US 16667 // 60Hz
+#define SCREEN_UPDATE_RATE_MS 20 // 50Hz
 
 // Change to 434.0 or other frequency, must match RX's freq!
 #define RF95_FREQ 915.0
@@ -21,6 +22,7 @@
 RH_RF95 radio(RFM95_CS, RFM95_INT);
 char radio_tx_buffer[16] = "Hello World    ";
 
+Timeout led_timer,gui_timer;
 
 ////////////////
 //            //
@@ -69,6 +71,9 @@ void setup() {
   //radio.setTxPower(23, false);
   
   radio.printRegisters();
+
+  led_timer.start(HEARTBEAT_LED_DELAY_MS);
+  gui_timer.start(SCREEN_UPDATE_RATE_MS);
 }
 
 ////////////////
@@ -77,28 +82,16 @@ void setup() {
 //            //
 ////////////////
 void loop() {
-  static unsigned long heartbeat_led_time = 0;
-  static unsigned long screen_update_time = 0;
-  static int pin_state = 0;
-  unsigned long current_time,current_time_us;
+  static bool led_state = false;
 
-  current_time = millis();
-  current_time_us = micros();
-  if((current_time - heartbeat_led_time) > HEARTBEAT_LED_DELAY_MS){
-    heartbeat_led_time = current_time;
-    if(pin_state == 0){
-      pin_state = 1;
-      digitalWrite(PIN_LED, HIGH);
-    }
-    else{
-      radio.send((uint8_t *)radio_tx_buffer, 16);
-      pin_state = 0;
-      digitalWrite(PIN_LED, LOW);
-    }
+  if(led_timer.periodic()){
+    led_state = !led_state;
+    digitalWrite(PIN_LED,led_state);
   }
 
-  if((current_time_us - screen_update_time) > SCREEN_UPDATE_RATE_US){
+  if(gui_timer.periodic()){
     gui_update();
   }
 
+  //radio.send((uint8_t *)radio_tx_buffer, 16);
 }
