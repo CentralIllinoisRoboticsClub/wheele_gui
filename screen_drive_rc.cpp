@@ -1,6 +1,6 @@
 #include "screen.h"
 
-#define CONTROL_STICK_PERSISTENCE_MS 250
+#define CONTROL_STICK_PERSISTENCE_MS 350
 
 #define CTRL_SURFACE_X 120
 #define CTRL_SURFACE_Y 40
@@ -11,6 +11,15 @@
 #define CTRL_STICK_Y (CTRL_SURFACE_Y + (CTRL_SURFACE_HEIGHT/2) - CTRL_STICK_RADIUS)
 #define ORIGIN_X_VERTICAL (CTRL_SURFACE_X + (CTRL_SURFACE_WIDTH/2))
 #define ORIGIN_Y_HORIZONTAL (CTRL_SURFACE_Y + (CTRL_SURFACE_HEIGHT/2))
+
+#define AUTO_MODE_PPM_PW_US 1800
+#define MANUAL_MODE_PPM_PW_US 1500
+#define PPM_PW_MIN 1000
+#define PPM_PW_MAX 2000
+#define STEER_CMD_MAX_RIGHT (CTRL_SURFACE_X+CTRL_SURFACE_WIDTH)
+#define STEER_CMD_MAX_LEFT  (CTRL_SURFACE_X)
+#define SPEED_CMD_MAX_REV   (CTRL_SURFACE_Y+CTRL_SURFACE_HEIGHT)
+#define SPEED_CMD_MAX_FWD   (CTRL_SURFACE_Y)
 
 static Box back_button(10,5,30,20,SCREEN_COLOR_RED);
 static Box auto_mode_button(10,85,100,40,SCREEN_COLOR_BLACK,true);
@@ -136,4 +145,18 @@ void update_drive_rc_screen(Adafruit_ILI9341& screen){
       Serial.println(s_y);
     }
   }
+}
+
+void drive_rc_get_data(int& auto_mode,int& steer, int& speed)
+{
+  // Send PPM encoded data
+  // Manual/Auto control
+  if(manual_mode_enabled == 0){auto_mode = AUTO_MODE_PPM_PW_US;} // auto mode
+  else{auto_mode = MANUAL_MODE_PPM_PW_US;} // manual mode
+
+  // Steering command (x-axis position)
+  steer = map(s_x,STEER_CMD_MAX_RIGHT,STEER_CMD_MAX_LEFT,PPM_PW_MIN,PPM_PW_MAX);
+
+  // Speed command (y-axis position)
+  speed = map(s_y,SPEED_CMD_MAX_REV,SPEED_CMD_MAX_FWD,PPM_PW_MIN,PPM_PW_MAX);
 }

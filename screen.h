@@ -166,4 +166,5 @@ void update_shutdown_screen(Adafruit_ILI9341& screen);
 void draw_drive_rc_screen(Adafruit_ILI9341& screen);
 int touch_drive_rc_screen(Adafruit_ILI9341& screen, TSPoint& p);
 void update_drive_rc_screen(Adafruit_ILI9341& screen);
+void drive_rc_get_data(int& auto_mode,int& steer, int& speed);
 #endif

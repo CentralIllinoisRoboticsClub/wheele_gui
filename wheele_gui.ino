@@ -16,7 +16,7 @@
 #define BATT_MON A7 // LiPo
 
 // Touch detection constants
-#define MINPRESSURE 100
+#define MINPRESSURE 25
 #define MAXPRESSURE 1000
 
 // Calibration data for the raw touch data to the screen coordinates
@@ -203,13 +203,45 @@ void loop() {
       break;
 
     case DRIVE_RC_SCREEN:
+      static int x = 0;
+      int auto_mode,steer,speed;
       update_drive_rc_screen(screen);
       if((current_time - button_press_time) > DRIVE_RC_REFRESH_MS){
         if(touch_detected(point)){
           button_press_time = current_time;
           new_screen = touch_drive_rc_screen(screen,point);
-          radio.send((uint8_t *)radio_tx_buffer, 16);
-        }   
+        }
+
+        // only transmit packet on every 3rd screen update;
+        // this improved responsiveness during manual control
+        x++;
+        if(x%3==0){
+          drive_rc_get_data(auto_mode,steer,speed);          
+
+          // Build LoRa packet
+          // CIRC Header bytes
+          radio_tx_buffer[0] = 0xCC;
+          radio_tx_buffer[1] = 0xAA;
+
+          // Steering Command
+          radio_tx_buffer[2] = (uint8_t)(((uint16_t)steer & 0xFF00)>>8);
+          radio_tx_buffer[3] = (uint8_t)steer;
+          
+          // Speed Command
+          radio_tx_buffer[4] = (uint8_t)(((uint16_t)speed & 0xFF00)>>8);
+          radio_tx_buffer[5] = (uint8_t)speed;
+
+          // unused but needs to be in valid PPM range 1000us-2000us
+          radio_tx_buffer[6] = 0x05;  
+          radio_tx_buffer[7] = 0xDC;
+
+          // auto/manual selection
+          radio_tx_buffer[8] = (uint8_t)(((uint16_t)auto_mode & 0xFF00)>>8);
+          radio_tx_buffer[9] = (uint8_t)auto_mode;
+
+          // transmit
+          radio.send((uint8_t *)radio_tx_buffer, 10);   
+        }
       }
       break;
       
