@@ -10,7 +10,7 @@ gslc_tsPage    m_asPage[MAX_PAGE];
 void gui_init(gslc_tsGui *pGUI)
 {
    s_pGUI = pGUI;
-   
+
    /* Setup debug output on Serial */
    gslc_InitDebug(&DebugOut);
 
@@ -20,6 +20,7 @@ void gui_init(gslc_tsGui *pGUI)
    /* Fonts */
    gslc_FontAdd(pGUI,E_FONT_BTN,GSLC_FONTREF_PTR,&FreeMonoBold9pt7b,1);
    gslc_FontAdd(pGUI,E_FONT_TITLE,GSLC_FONTREF_PTR,&FreeSerifBold9pt7b,1);
+   gslc_FontAdd(pGUI,E_FONT_DISPLAY,GSLC_FONTREF_PTR,&FreeMonoBold9pt7b,2);
 
    /* Background */
    gslc_SetBkgndColor(pGUI,GUI_COL_BKGND);

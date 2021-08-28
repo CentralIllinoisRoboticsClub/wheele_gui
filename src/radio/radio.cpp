@@ -1,5 +1,6 @@
 #include "radio.h"
 
+#define LORA_CHAN_MAX 12
 static RH_RF95 * s_pRadio;
 
 void radio_init(RH_RF95 * pRadio)
@@ -8,7 +9,7 @@ void radio_init(RH_RF95 * pRadio)
    digitalWrite(RFM95_RST, HIGH); delay(10);
    digitalWrite(RFM95_RST, LOW);  delay(10);
    digitalWrite(RFM95_RST, HIGH); delay(10);
-   
+
    uint8_t device_version = pRadio->getDeviceVersion();
    Serial.print(F("RFM95 Version ID: "));
    Serial.print(device_version);
@@ -42,4 +43,21 @@ void radio_init(RH_RF95 * pRadio)
 void radio_tx(char tx_buffer[],uint8_t size)
 {
    s_pRadio->send((uint8_t *)tx_buffer, size);
+}
+
+float radio_get_chan_center_freq(int chan)
+{
+   if(chan == LORA_CHAN_MAX){
+      return 915.0f;
+   }
+   else{
+      return 903.08f + ((float)chan*2.16f);
+   }
+}
+
+void radio_set_frequency(float f)
+{
+   if(!s_pRadio->setFrequency(f)){
+      Serial.println("radio: Set Frequency Failed.");
+   }
 }

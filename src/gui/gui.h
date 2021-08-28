@@ -16,6 +16,7 @@
 enum{
   E_FONT_BTN,
   E_FONT_TITLE,
+  E_FONT_DISPLAY,
   MAX_FONT
 };
 
