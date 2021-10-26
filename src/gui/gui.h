@@ -41,4 +41,5 @@ void init_home_screen(gslc_tsGui* pGui);
 void init_setup_screen(gslc_tsGui* pGui);
 void init_lora_screen(gslc_tsGui* pGui);
 void init_shutdown_screen(gslc_tsGui* pGui);
+void init_waypoints_screen(gslc_tsGui* pGui);
 #endif

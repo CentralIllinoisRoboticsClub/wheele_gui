@@ -31,6 +31,7 @@ void gui_init(gslc_tsGui *pGUI)
    init_setup_screen(pGUI);
    init_lora_screen(pGUI);
    init_shutdown_screen(pGUI);
+   init_waypoints_screen(pGUI);
 
    /* Initial screen */
    gslc_SetPageCur(pGUI,E_PG_HOME);
