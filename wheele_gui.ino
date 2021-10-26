@@ -53,4 +53,6 @@ void loop() {
   if(gui_timer.periodic()){
     gui_update();
   }
+
+  radio_rx();
 }

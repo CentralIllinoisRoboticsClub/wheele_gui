@@ -13,6 +13,7 @@
 
 void radio_init(RH_RF95 * pRadio);
 void radio_tx(char msg[],uint8_t size);
+void radio_rx(void);
 float radio_get_chan_center_freq(int chan);
 void radio_set_frequency(float f);
 

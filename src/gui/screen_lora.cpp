@@ -37,7 +37,7 @@ static gslc_tsElem    s_Elem[MAX_ELEM];
 static gslc_tsElemRef s_ElemRef[MAX_ELEM];
 static gslc_tsElemRef *pChannelBox;
 static gslc_tsElemRef *pFreqBox;
-static int channel = 0;
+static int channel = 12;
 static char test_buffer[16] = "Hello World    ";
 static char acTxtChannel[MAX_STR] = {0};
 static char acTxtFreq[MAX_STR] = {0};

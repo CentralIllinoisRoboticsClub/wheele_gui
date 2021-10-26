@@ -45,6 +45,17 @@ void radio_tx(char tx_buffer[],uint8_t size)
    s_pRadio->send((uint8_t *)tx_buffer, size);
 }
 
+void radio_rx(void)
+{
+   uint8_t buf[32];
+   uint8_t len = sizeof(buf);
+   if(s_pRadio->available()){
+      if(s_pRadio->recv(buf,&len)){
+         Serial.println((char*)buf);
+      }
+   }
+}
+
 float radio_get_chan_center_freq(int chan)
 {
    if(chan == LORA_CHAN_MAX){
