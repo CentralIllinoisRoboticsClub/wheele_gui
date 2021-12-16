@@ -3,6 +3,7 @@
 #include <timeout.h>
 #include "src/radio/radio.h"
 #include "src/gui/gui.h"
+#include "git-version.h"
 
 #define BATT_MON A7 // LiPo
 
@@ -30,6 +31,8 @@ void setup() {
   Serial.begin(57600);
   while(!Serial);
 
+  Serial.println("WHEELE GUI Version: " GIT_VERSION);
+  
   radio_init(&radio);
   gui_init(&gui);  
 
