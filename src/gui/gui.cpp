@@ -21,6 +21,7 @@ void gui_init(gslc_tsGui *pGUI)
    gslc_FontAdd(pGUI,E_FONT_BTN,GSLC_FONTREF_PTR,&FreeMonoBold9pt7b,1);
    gslc_FontAdd(pGUI,E_FONT_TITLE,GSLC_FONTREF_PTR,&FreeSerifBold9pt7b,1);
    gslc_FontAdd(pGUI,E_FONT_DISPLAY,GSLC_FONTREF_PTR,&FreeMonoBold9pt7b,2);
+   gslc_FontAdd(pGUI,E_FONT_LIST,GSLC_FONTREF_PTR,&FreeSerif9pt7b,1);
 
    /* Background */
    gslc_SetBkgndColor(pGUI,GUI_COL_BKGND);
@@ -32,6 +33,7 @@ void gui_init(gslc_tsGui *pGUI)
    init_lora_screen(pGUI);
    init_shutdown_screen(pGUI);
    init_waypoints_screen(pGUI);
+   init_info_screen(pGUI);
 
    /* Initial screen */
    gslc_SetPageCur(pGUI,E_PG_HOME);

@@ -21,21 +21,21 @@ void radio_init(RH_RF95 * pRadio)
      Serial.println("Uncomment '#define SERIAL_DEBUG' in RH_RF95.cpp for detailed debug info");
      while (1);
    }
-   Serial.println("LoRa radio init OK!");
+   Serial.print("LoRa radio init OK!...");
 
    // Set
    if (!pRadio->setFrequency(RF95_FREQ)) {
-     Serial.println("setFrequency failed");
+     Serial.println("but setFrequency failed!");
      while (1);
    }
-   Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
+   Serial.print("Set frequency to default: "); Serial.println(RF95_FREQ);
 
    // The default transmitter power is 13dBm, using PA_BOOST.
    // If you are using RFM95/96/97/98 modules which uses the PA_BOOST transmitter pin, then
    // you can set transmitter powers from 5 to 23 dBm:
    //pRadio->setTxPower(23, false);
 
-   pRadio->printRegisters();
+   //pRadio->printRegisters();
 
    s_pRadio = pRadio;
 }
@@ -71,4 +71,9 @@ void radio_set_frequency(float f)
    if(!s_pRadio->setFrequency(f)){
       Serial.println("radio: Set Frequency Failed.");
    }
+}
+
+uint8_t radio_get_version(void)
+{
+   return s_pRadio->getDeviceVersion();
 }

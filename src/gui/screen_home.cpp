@@ -10,6 +10,7 @@
 #define WAYPOINTS_BUTTON_COORDS (gslc_tsRect){20,120,BUTTON_WIDTH,BUTTON_HEIGHT}
 #define CONTROL_BUTTON_COORDS (gslc_tsRect){160,60,BUTTON_WIDTH,BUTTON_HEIGHT}
 #define SHUTDOWN_BUTTON_COORDS (gslc_tsRect){160,120,BUTTON_WIDTH,BUTTON_HEIGHT}
+#define INFO_BUTTON_COORDS (gslc_tsRect){160,180,BUTTON_WIDTH,BUTTON_HEIGHT}
 
 static gslc_tsElem    m_asHomeElem[MAX_ELEM_PG_HOME];
 static gslc_tsElemRef m_asHomeElemRef[MAX_ELEM_PG_HOME];
@@ -51,6 +52,15 @@ bool CbBtnShutdown(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,in
    return true;
 }
 
+bool CbBtnInfo(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
+{
+   gslc_tsGui *pGui = (gslc_tsGui*)(pvGui);
+   if (eTouch == GSLC_TOUCH_UP_IN) {
+      gslc_SetPageCur(pGui,E_PG_INFO);
+   }
+   return true;
+}
+
 void init_home_screen(gslc_tsGui* pGui)
 {
   gslc_tsElemRef* pElemRef = NULL;
@@ -87,4 +97,9 @@ void init_home_screen(gslc_tsGui* pGui)
   gslc_ElemSetCol(pGui,pElemRef,GSLC_COL_BLUE,GSLC_COL_BLACK,GSLC_COL_YELLOW);
   gslc_ElemSetRoundEn(pGui,pElemRef,true);
 
+  // INFO
+  pElemRef = gslc_ElemCreateBtnTxt(pGui,GSLC_ID_AUTO,THIS_PAGE,
+    INFO_BUTTON_COORDS,(char*)"INFO",0,E_FONT_BTN,&CbBtnInfo);
+  gslc_ElemSetCol(pGui,pElemRef,GSLC_COL_BLUE,GSLC_COL_BLACK,GSLC_COL_YELLOW);
+  gslc_ElemSetRoundEn(pGui,pElemRef,true);
 }
