@@ -38,7 +38,7 @@ bool CbBtnControl(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int
 {
    gslc_tsGui *pGui = (gslc_tsGui*)(pvGui);
    if (eTouch == GSLC_TOUCH_UP_IN) {
-      gslc_SetPageCur(pGui,E_PG_CONTROL);
+      gslc_SetPageCur(pGui,E_PG_CTRL);
    }
    return true;
 }

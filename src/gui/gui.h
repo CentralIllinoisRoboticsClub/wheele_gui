@@ -34,6 +34,7 @@ enum{
   E_PG_BAGFILE,
   E_PG_CLEAR_WAYPOINTS,
   E_PG_INFO,
+  E_PG_CTRL,
   MAX_PAGE
 };
 
@@ -48,4 +49,5 @@ void init_lora_screen(gslc_tsGui* pGui);
 void init_shutdown_screen(gslc_tsGui* pGui);
 void init_waypoints_screen(gslc_tsGui* pGui);
 void init_info_screen(gslc_tsGui* pGui);
+void init_control_screen(gslc_tsGui* pGui);
 #endif
