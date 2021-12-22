@@ -38,9 +38,23 @@ enum{
   MAX_PAGE
 };
 
+enum{
+   E_ELEM_INFO_ID_VBATT
+};
+
+enum{
+   E_ELEM_CTRL_ID_WHEELE_MODE,
+   E_ELEM_CTRL_ID_NAV_STATE,
+   E_ELEM_CTRL_ID_CUR_HEAD,
+   E_ELEM_CTRL_ID_TRGT_HEAD,
+   E_ELEM_CTRL_ID_TRGT_WYPT,
+   E_ELEM_CTRL_ID_TRGT_DIST,
+   E_ELEM_CTRL_ID_ROS_BOX,
+   E_ELEM_CTRL_ID_GPS_BOX
+};
+
 void gui_init(gslc_tsGui *pGUI);
-void gui_update(void);
-void update_info_screen(gslc_tsGui* pGui, uint32_t vbatt);
+gslc_tsGui *gui_get_ref(void);
 
 void init_base_screen(gslc_tsGui* pGui);
 void init_home_screen(gslc_tsGui* pGui);

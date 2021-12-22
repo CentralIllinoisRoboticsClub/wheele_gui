@@ -8,3 +8,5 @@
 * Adafruit_ILI9341
 * Adafruit_BusIO
 * Adafruit_STMPE610
+* RadioHead
+* SerialTransfer

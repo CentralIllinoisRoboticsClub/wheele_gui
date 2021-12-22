@@ -49,10 +49,8 @@ void radio_rx(void)
 {
    uint8_t buf[32];
    uint8_t len = sizeof(buf);
-   if(s_pRadio->available()){
-      if(s_pRadio->recv(buf,&len)){
-         Serial.println((char*)buf);
-      }
+   if(s_pRadio->recv(buf,&len)){
+      Serial.println((char*)buf);
    }
 }
 

@@ -40,7 +40,6 @@ void gui_init(gslc_tsGui *pGUI)
    gslc_SetPageCur(pGUI,E_PG_HOME);
 }
 
-void gui_update(void)
-{
-   gslc_Update(s_pGUI);
+gslc_tsGui *gui_get_ref(void){
+   return s_pGUI;
 }

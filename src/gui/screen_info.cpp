@@ -16,7 +16,6 @@
 
 static gslc_tsElem    s_Elem[MAX_ELEM];
 static gslc_tsElemRef s_ElemRef[MAX_ELEM];
-static gslc_tsElemRef *pVbattBox;
 static char s_acTxt[MAX_STR] = {0};
 static char s_gslice_version[MAX_STR] = {0};
 static char s_rfm95_version[MAX_STR] = {0};
@@ -29,11 +28,11 @@ void init_info_screen(gslc_tsGui* pGui)
 
   // VBATT
   snprintf(s_acTxt,MAX_STR,"GUI BATT:- mV");
-  pVbattBox = gslc_ElemCreateTxt(pGui,GSLC_ID_AUTO,THIS_PAGE,
+  pElemRef = gslc_ElemCreateTxt(pGui,E_ELEM_INFO_ID_VBATT,THIS_PAGE,
     VBATT_STRING_COORDS,s_acTxt,MAX_STR,E_FONT_LIST);
-  gslc_ElemSetCol(pGui,pVbattBox,GSLC_COL_BLUE,GUI_COL_BKGND,GSLC_COL_BLUE);
-  gslc_ElemSetTxtCol(pGui,pVbattBox,GSLC_COL_BLACK);
-  gslc_ElemSetTxtAlign(pGui,pVbattBox,GSLC_ALIGN_MID_LEFT);
+  gslc_ElemSetCol(pGui,pElemRef,GSLC_COL_BLUE,GUI_COL_BKGND,GSLC_COL_BLUE);
+  gslc_ElemSetTxtCol(pGui,pElemRef,GSLC_COL_BLACK);
+  gslc_ElemSetTxtAlign(pGui,pElemRef,GSLC_ALIGN_MID_LEFT);
 
   // WHEELE GUI
   pElemRef = gslc_ElemCreateTxt(pGui,GSLC_ID_AUTO,THIS_PAGE,
@@ -69,11 +68,4 @@ void init_info_screen(gslc_tsGui* pGui)
   gslc_ElemSetCol(pGui,pElemRef,GSLC_COL_BLUE,GUI_COL_BKGND,GSLC_COL_BLUE);
   gslc_ElemSetTxtCol(pGui,pElemRef,GSLC_COL_BLACK);
   gslc_ElemSetTxtAlign(pGui,pElemRef,GSLC_ALIGN_MID_LEFT);
-}
-
-void update_info_screen(gslc_tsGui* pGui, uint32_t vbatt)
-{
-   snprintf(s_acTxt,MAX_STR,"GUI BATT:%dmV\0",vbatt);
-   gslc_ElemSetTxtStr(pGui,pVbattBox,(const char*)s_acTxt);
-   gslc_ElemSetRedraw(pGui,pVbattBox,GSLC_REDRAW_FULL);
 }
