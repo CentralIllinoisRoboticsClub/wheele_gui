@@ -4,7 +4,7 @@ from pySerialTransfer import pySerialTransfer as txfer
 
 if __name__ == '__main__':
     try:
-        link = txfer.SerialTransfer('/dev/ttyACM1')
+        link = txfer.SerialTransfer('/dev/ttyACM0')
 
         link.open()
 

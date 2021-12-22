@@ -2,6 +2,7 @@
 #include <RH_RF95.h>
 #include <SerialTransfer.h>
 #include <timeout.h>
+#include <Adafruit_GPS.h>
 #include "src/radio/radio.h"
 #include "src/gui/gui.h"
 #include "src/packet/packet.h"
@@ -15,6 +16,7 @@
 #define SCREEN_UPDATE_RATE_MS 20 // 50Hz
 #define VBATT_SAMPLE_RATE_MS 5000
 #define ROS_HEARTBEAT_MS 5000
+#define GPS_UPDATE_RATE_MS 2000
 #define MAX_STR 32
 
 RH_RF95 radio(RFM95_CS, RFM95_INT);
@@ -23,7 +25,9 @@ Timeout led_timer;
 Timeout gui_timer;
 Timeout battery_timer;
 Timeout ros_heartbeat;
+Timeout gps_update;
 SerialTransfer serial_transfer;
+Adafruit_GPS GPS(&Serial1);
 
 static char s_buf[MAX_STR] = {0};
 
@@ -48,11 +52,19 @@ void setup() {
   gui_init(&gui);
   
   serial_transfer.begin(Serial);
-  
+    
+  GPS.begin(9600);  // 9600 NMEA is the default baud rate for Adafruit MTK GPS's- some use 4800  
+  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA); // turn on RMC (recommended minimum) and GGA (fix data) including altitude
+  //GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCONLY); // turn on only the "minimum recommended" data
+  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); // 1 Hz update rate
+  GPS.sendCommand(PGCMD_ANTENNA); // Request updates on antenna status
+  GPS.sendCommand(PMTK_Q_RELEASE); // Request GPS firmware version 
+
   led_timer.start(HEARTBEAT_LED_DELAY_MS);
   gui_timer.start(SCREEN_UPDATE_RATE_MS);
   battery_timer.start(VBATT_SAMPLE_RATE_MS);
   ros_heartbeat.start(ROS_HEARTBEAT_MS);
+  gps_update.start(GPS_UPDATE_RATE_MS);
 }
 
 ////////////////
@@ -65,9 +77,35 @@ void loop() {
   static bool ros_alive = false;
   gslc_tsElemRef* pGuiElement;
 
+  char c = GPS.read();
+  if (GPS.newNMEAreceived()) {
+    GPS.parse(GPS.lastNMEA());
+  }
+  
   if(led_timer.periodic()){
     led_state = !led_state;
     digitalWrite(PIN_LED,led_state);
+  }
+
+  if(gps_update.periodic()){
+    pGuiElement = gslc_PageFindElemById(&gui,E_PG_CTRL,E_ELEM_CTRL_ID_GPS_BOX);
+    gslc_tsColor box_color = GSLC_COL_RED_DK1;
+    if(GPS.fix){
+      gslc_tsElemRef* pPositionTxt;
+      box_color = GSLC_COL_GREEN_DK1;
+  
+      pPositionTxt = gslc_PageFindElemById(&gui,E_PG_WAYPOINTS,E_ELEM_WYPT_ID_GPS_LAT);
+      snprintf(s_buf,MAX_STR,"LAT:%f%c",GPS.latitudeDegrees,GPS.lat);
+      gslc_ElemSetTxtStr(&gui,pPositionTxt,(const char*)s_buf);
+      gslc_ElemSetRedraw(&gui,pPositionTxt,GSLC_REDRAW_FULL);
+
+      pPositionTxt = gslc_PageFindElemById(&gui,E_PG_WAYPOINTS,E_ELEM_WYPT_ID_GPS_LON);
+      snprintf(s_buf,MAX_STR,"LON:%f%c",GPS.longitudeDegrees,GPS.lon);
+      gslc_ElemSetTxtStr(&gui,pPositionTxt,(const char*)s_buf);
+      gslc_ElemSetRedraw(&gui,pPositionTxt,GSLC_REDRAW_FULL);
+    }
+    gslc_ElemSetCol(&gui,pGuiElement,GSLC_COL_BLACK,box_color,GSLC_COL_BLUE);
+    gslc_ElemSetRedraw(&gui,pGuiElement,GSLC_REDRAW_FULL);      
   }
 
   if(ros_heartbeat.periodic()){
