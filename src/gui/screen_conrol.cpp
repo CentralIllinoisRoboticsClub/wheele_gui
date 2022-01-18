@@ -17,12 +17,12 @@ void init_control_screen(gslc_tsGui* pGui)
 
   gslc_PageAdd(pGui,THIS_PAGE,s_Elem,MAX_ELEM,s_ElemRef,MAX_ELEM);
 
-  pElemRef = gslc_ElemCreateTxt(pGui,GSLC_ID_AUTO,THIS_PAGE,(gslc_tsRect){240,160,40,40},
+  pElemRef = gslc_ElemCreateTxt(pGui,GSLC_ID_AUTO,THIS_PAGE,(gslc_tsRect){140,190,40,40},
     (char*)"GPS:",0,E_FONT_LIST);
   gslc_ElemSetCol(pGui,pElemRef,GSLC_COL_BLUE,GUI_COL_BKGND,GSLC_COL_BLUE);
   gslc_ElemSetTxtCol(pGui,pElemRef,GSLC_COL_BLACK);
 
-  pElemRef = gslc_ElemCreateBox(pGui,E_ELEM_CTRL_ID_GPS_BOX,THIS_PAGE,(gslc_tsRect){280,170,20,20});
+  pElemRef = gslc_ElemCreateBox(pGui,E_ELEM_CTRL_ID_GPS_BOX,THIS_PAGE,(gslc_tsRect){180,200,20,20});
   gslc_ElemSetCol(pGui,pElemRef,GSLC_COL_BLACK,GSLC_COL_RED_DK1,GSLC_COL_BLUE);
 
   pElemRef = gslc_ElemCreateTxt(pGui,GSLC_ID_AUTO,THIS_PAGE,(gslc_tsRect){240,190,40,40},
@@ -80,4 +80,21 @@ void init_control_screen(gslc_tsGui* pGui)
   gslc_ElemSetCol(pGui,pElemRef,GSLC_COL_BLUE,GUI_COL_BKGND,GSLC_COL_BLUE);
   gslc_ElemSetTxtCol(pGui,pElemRef,GSLC_COL_BLACK);
   gslc_ElemSetTxtAlign(pGui,pElemRef,GSLC_ALIGN_MID_LEFT);
+
+  // CMD VEL
+  snprintf(&s_acTxt[6][0],MAX_STR,"CMDVEL(m/s): -");
+  pElemRef = gslc_ElemCreateTxt(pGui,E_ELEM_CTRL_ID_CMD_VEL_LIN,THIS_PAGE,(gslc_tsRect){10,160,TEXTBOX_WIDTH,TEXTBOX_HEIGHT},
+    &s_acTxt[6][0],MAX_STR,E_FONT_LIST);
+  gslc_ElemSetCol(pGui,pElemRef,GSLC_COL_BLUE,GUI_COL_BKGND,GSLC_COL_BLUE);
+  gslc_ElemSetTxtCol(pGui,pElemRef,GSLC_COL_BLACK);
+  gslc_ElemSetTxtAlign(pGui,pElemRef,GSLC_ALIGN_MID_LEFT);
+
+  snprintf(&s_acTxt[7][0],MAX_STR,"CMDVEL(r/s): -");
+  pElemRef = gslc_ElemCreateTxt(pGui,E_ELEM_CTRL_ID_CMD_VEL_ANG,THIS_PAGE,(gslc_tsRect){10,180,TEXTBOX_WIDTH,TEXTBOX_HEIGHT},
+    &s_acTxt[7][0],MAX_STR,E_FONT_LIST);
+  gslc_ElemSetCol(pGui,pElemRef,GSLC_COL_BLUE,GUI_COL_BKGND,GSLC_COL_BLUE);
+  gslc_ElemSetTxtCol(pGui,pElemRef,GSLC_COL_BLACK);
+  gslc_ElemSetTxtAlign(pGui,pElemRef,GSLC_ALIGN_MID_LEFT);
+
+
 }
