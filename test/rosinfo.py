@@ -1,12 +1,20 @@
 import rospy
 import rosnode
 import time
+import std_msgs.msg
+import tf
 from serial import Serial
 from pySerialTransfer import pySerialTransfer as txfer
+from geometry_msgs.msg import Pose
 from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Vector3
+from nav_msgs.msg import Odometry
 
 DEVICE='/dev/ttyUSB0'
 BAUDRATE=57600
+PACKET_ID_WHEELE_MODE=10
+PACKET_ID_NAV_STATE=20
+PACKET_ID_CUR_POSE=30
 ROS_ALIVE_ID=70
 CMD_VEL_ID=80
 
@@ -18,7 +26,16 @@ class struct(object):
     pitch = 0.00
     roll = 0.00
 
+class heading_struct(object):
+    roll = 0.00
+    pitch = 0.0
+    yaw = 0.0
+
 cmd_vel = struct
+heading = heading_struct
+nav_state = 0
+manual_auto_mode = 0
+yaw = 0
 
 def callback(data):
     cmd_vel.x = data.linear.x
@@ -27,6 +44,23 @@ def callback(data):
     cmd_vel.yaw = data.angular.x
     cmd_vel.pitch = data.angular.y
     cmd_vel.roll = data.angular.z
+
+def raw_cmd_callback(cmd):
+    global manual_auto_mode
+    manual_auto_mode = cmd.z
+
+def nav_state_callback(state):
+    global nav_state
+    nav_state = state.data
+
+def odom_callback(odom):
+    w = odom.pose.pose.orientation.w
+    x = odom.pose.pose.orientation.x
+    y = odom.pose.pose.orientation.y
+    z = odom.pose.pose.orientation.z
+
+    euler_angles = tf.transformations.euler_from_quaternion([x,y,z,w])
+    heading.yaw = 360*euler_angles[2]/6.28 # [0] roll, [1] pitch, [2] yaw
 
 def publish_message():
     comm = Serial('/dev/ttyUSB0', baudrate=57600, timeout=2)
@@ -83,6 +117,18 @@ def rosinfo_server():
         size = link.tx_obj(cmd_vel.roll,start_pos=size)
         link.send(size,CMD_VEL_ID)
 
+        size = 0
+        size = link.tx_obj(int(manual_auto_mode),start_pos=size,val_type_override='i')
+        link.send(size,PACKET_ID_WHEELE_MODE)
+
+        size = 0
+        size = link.tx_obj(nav_state,start_pos=size)
+        link.send(size,PACKET_ID_NAV_STATE)
+
+        size = 0
+        size = link.tx_obj(heading.yaw,start_pos=size)
+        link.send(size,PACKET_ID_CUR_POSE)
+
         #if cmd_string[0] == '1':
         #    nodes = rosnode.get_node_names()
         #    for node in nodes:
@@ -93,4 +139,7 @@ def rosinfo_server():
 if __name__ == '__main__':
     rospy.init_node('listener', anonymous=True)
     rospy.Subscriber('cmd_vel', Twist, callback)
+    rospy.Subscriber('raw_cmd_py',Vector3, raw_cmd_callback)
+    rospy.Subscriber('odom',Odometry,odom_callback)
+    rospy.Subscriber('nav_state', std_msgs.msg.Int16 ,nav_state_callback)
     rosinfo_server()

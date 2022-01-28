@@ -17,6 +17,7 @@
 #define VBATT_SAMPLE_RATE_MS 5000
 #define ROS_HEARTBEAT_MS 5000
 #define GPS_UPDATE_RATE_MS 2000
+#define STATS_UPDATE_RATE_MS 5000
 #define MAX_STR 32
 
 RH_RF95 radio(RFM95_CS, RFM95_INT);
@@ -26,10 +27,15 @@ Timeout gui_timer;
 Timeout battery_timer;
 Timeout ros_heartbeat;
 Timeout gps_update;
+Timeout stats;
 SerialTransfer serial_transfer;
 Adafruit_GPS GPS(&Serial1);
 
-static char s_buf[MAX_STR] = {0};
+char s_buf[MAX_STR] = {0};
+unsigned long min_time_us = ULONG_MAX;
+unsigned long max_time_us = 0;
+float avg_time_us = 0.0;
+unsigned long loop_count = 0;
 
 ////////////////
 //            //
@@ -65,6 +71,7 @@ void setup() {
   battery_timer.start(VBATT_SAMPLE_RATE_MS);
   ros_heartbeat.start(ROS_HEARTBEAT_MS);
   gps_update.start(GPS_UPDATE_RATE_MS);
+  stats.start(STATS_UPDATE_RATE_MS);
 }
 
 ////////////////
@@ -76,7 +83,10 @@ void loop() {
   static bool led_state = false;
   static bool ros_alive = false;
   gslc_tsElemRef* pGuiElement;
+  unsigned long start_time,finish_time,loop_time;
 
+  start_time = micros();
+  
   char c = GPS.read();
   if (GPS.newNMEAreceived()) {
     GPS.parse(GPS.lastNMEA());
@@ -149,5 +159,19 @@ void loop() {
    
   if(gui_timer.periodic()){
     gslc_Update(&gui);
+  }
+
+  finish_time = micros();
+  loop_count++;
+  loop_time = finish_time - start_time;
+  if(loop_time > max_time_us){max_time_us = loop_time;}
+  if(loop_time < min_time_us){min_time_us = loop_time;}
+  avg_time_us = (float)(avg_time_us + (float)loop_time)/2;
+
+  if(stats.periodic()){
+    Serial.print("loop time (min): "); Serial.println(min_time_us);
+    Serial.print("loop time (max): "); Serial.println(max_time_us);
+    Serial.print("loop time (avg): "); Serial.println(avg_time_us);
+    min_time_us = ULONG_MAX; max_time_us = 0;
   }
 }

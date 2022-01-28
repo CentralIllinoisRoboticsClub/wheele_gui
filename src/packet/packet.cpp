@@ -10,13 +10,6 @@ typedef struct {
 
 static char s_buf[MAX_STR] = {0};
 
-static const char *s_wheele_mode[] =
-{
-   "AUTO",
-   "STOPPED",
-   "MANUAL"
-};
-
 static const char *s_navstate[] =
 {
    "RETREAT FROM CONE",
@@ -41,11 +34,20 @@ void packet_handler(SerialTransfer& transfer){
          break;
 
       case PACKET_ID_WHEELE_MODE:
-         uint8_t mode;
+         #define MIN_CONTROL_PULSE_WIDTH 1000u
+         #define MIN_AUTO_MODE_PULSE_WIDTH 1700u
+
+         uint16_t mode;
          transfer.rxObj(mode);
 
+         if(mode < MIN_CONTROL_PULSE_WIDTH)
+            snprintf(s_buf,MAX_STR,"MODE: %s","STOPPED");
+         else if(mode > MIN_AUTO_MODE_PULSE_WIDTH)
+            snprintf(s_buf,MAX_STR,"MODE: %s","AUTO");
+         else
+            snprintf(s_buf,MAX_STR,"MODE: %s","MANUAL");
+
          pGuiElem = gslc_PageFindElemById(pGui,E_PG_CTRL,E_ELEM_CTRL_ID_WHEELE_MODE);
-         snprintf(s_buf,MAX_STR,"MODE: %s",s_wheele_mode[mode]);
          gslc_ElemSetTxtStr(pGui,pGuiElem,(const char*)s_buf);
          gslc_ElemSetRedraw(pGui,pGuiElem,GSLC_REDRAW_FULL);
          break;
@@ -75,6 +77,15 @@ void packet_handler(SerialTransfer& transfer){
          gslc_ElemSetTxtStr(pGui,pGuiElem,(const char*)s_buf);
          gslc_ElemSetRedraw(pGui,pGuiElem,GSLC_REDRAW_FULL);
          break;
+
+      case PACKET_ID_CUR_POSE:
+         float heading;
+         transfer.rxObj(heading);
+
+         pGuiElem = gslc_PageFindElemById(pGui,E_PG_CTRL,E_ELEM_CTRL_ID_CUR_HEAD);
+         snprintf(s_buf,MAX_STR,"CUR HEAD: %.2f",heading);
+         gslc_ElemSetTxtStr(pGui,pGuiElem,(const char*)s_buf);
+         gslc_ElemSetRedraw(pGui,pGuiElem,GSLC_REDRAW_FULL);
 
       default:
          break;
