@@ -20,6 +20,8 @@
 #define STATS_UPDATE_RATE_MS 5000
 #define MAX_STR 32
 
+//#define SERIAL_DEBUG_ENABLE
+
 RH_RF95 radio(RFM95_CS, RFM95_INT);
 gslc_tsGui  gui;
 Timeout led_timer;
@@ -169,9 +171,11 @@ void loop() {
   avg_time_us = (float)(avg_time_us + (float)loop_time)/2;
 
   if(stats.periodic()){
-    Serial.print("loop time (min): "); Serial.println(min_time_us);
-    Serial.print("loop time (max): "); Serial.println(max_time_us);
-    Serial.print("loop time (avg): "); Serial.println(avg_time_us);
+    #ifdef SERIAL_DEBUG_ENABLE
+    Serial.print("loop time (min): "); Serial.print(min_time_us); Serial.println(" us");
+    Serial.print("loop time (max): "); Serial.print(max_time_us); Serial.println(" us");
+    Serial.print("loop time (avg): "); Serial.print(avg_time_us); Serial.println(" us");
+    #endif
     min_time_us = ULONG_MAX; max_time_us = 0;
   }
 }

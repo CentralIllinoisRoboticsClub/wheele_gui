@@ -19,6 +19,7 @@ static const char *s_navstate[] =
    "TOUCH TARGET ",
    "SEARCH IN PLACE"
 };
+#define NUM_NAV_STATES (sizeof(s_navstate)/sizeof(s_navstate[0]))
 
 void packet_handler(SerialTransfer& transfer){
    gslc_tsElemRef* pGuiElem = NULL;
@@ -57,8 +58,12 @@ void packet_handler(SerialTransfer& transfer){
          transfer.rxObj(nav_state);
          nav_state += 2; // offset to match wheele nav states
 
+         if(nav_state < NUM_NAV_STATES)
+            snprintf(s_buf,MAX_STR,"STATE: %s",s_navstate[nav_state]);
+         else
+            snprintf(s_buf,MAX_STR,"STATE: %s","INVALID");
+
          pGuiElem = gslc_PageFindElemById(pGui,E_PG_CTRL,E_ELEM_CTRL_ID_NAV_STATE);
-         snprintf(s_buf,MAX_STR,"STATE: %s",s_navstate[nav_state]);
          gslc_ElemSetTxtStr(pGui,pGuiElem,(const char*)s_buf);
          gslc_ElemSetRedraw(pGui,pGuiElem,GSLC_REDRAW_FULL);
          break;
