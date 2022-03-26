@@ -3,12 +3,16 @@
 #include <SerialTransfer.h>
 #include <timeout.h>
 #include <Adafruit_GPS.h>
+#include <Adafruit_SleepyDog.h>
 #include "src/radio/radio.h"
 #include "src/gui/gui.h"
 #include "src/packet/packet.h"
 #include "git-version.h"
 
 #define BATT_MON A7 // LiPo
+#define SCREEN_LITE_PIN 12
+#define DEFAULT_BRIGHTNESS 200
+#define SCREEN_OFF 0 
 
 #define HEARTBEAT_LED_DELAY_MS 500
 #define BUTTON_DEBOUNCE_MS 250
@@ -18,6 +22,7 @@
 #define ROS_HEARTBEAT_MS 5000
 #define GPS_UPDATE_RATE_MS 2000
 #define STATS_UPDATE_RATE_MS 5000
+#define INACTIVITY_TIMEOUT_MS 60000
 #define MAX_STR 32
 
 //#define SERIAL_DEBUG_ENABLE
@@ -38,6 +43,36 @@ unsigned long min_time_us = ULONG_MAX;
 unsigned long max_time_us = 0;
 float avg_time_us = 0.0;
 unsigned long loop_count = 0;
+unsigned long last_touch_time = 0;
+bool screen_blank_active = false;
+bool radio_on = true;
+bool gps_on = true;
+
+// This callback function is triggered any time
+// that a touch event occurs while we have requested
+// a touch trigger callback.
+bool CbTouchTrig(void* pvGui)
+{
+  if (screen_blank_active) {
+    // Enable the screen
+    analogWrite(SCREEN_LITE_PIN,DEFAULT_BRIGHTNESS);
+    screen_blank_active = false;
+
+    // Wake-up radio
+    radio.setModeIdle();
+    radio_on = true;
+
+    // Wake-up GPS
+    GPS.wakeup();
+    gps_on = true;
+  }
+  
+  // Reset timer
+  last_touch_time = millis();
+  gslc_SetTouchTrigFunc(&gui,&CbTouchTrig);
+
+  return true;
+}
 
 ////////////////
 //            //
@@ -49,6 +84,7 @@ void setup() {
   pinMode(RFM95_RST, OUTPUT);
   pinMode(RFM95_CS, OUTPUT);
   digitalWrite(RFM95_CS, HIGH);
+  analogWrite(SCREEN_LITE_PIN,DEFAULT_BRIGHTNESS);
 
   Serial.begin(57600);
   //while(!Serial);
@@ -100,24 +136,26 @@ void loop() {
   }
 
   if(gps_update.periodic()){
-    pGuiElement = gslc_PageFindElemById(&gui,E_PG_CTRL,E_ELEM_CTRL_ID_GPS_BOX);
-    gslc_tsColor box_color = GSLC_COL_RED_DK1;
-    if(GPS.fix){
-      gslc_tsElemRef* pPositionTxt;
-      box_color = GSLC_COL_GREEN_DK1;
+    if(gps_on == true){
+      pGuiElement = gslc_PageFindElemById(&gui,E_PG_CTRL,E_ELEM_CTRL_ID_GPS_BOX);
+      gslc_tsColor box_color = GSLC_COL_RED_DK1;
+      if(GPS.fix){
+        gslc_tsElemRef* pPositionTxt;
+        box_color = GSLC_COL_GREEN_DK1;
+    
+        pPositionTxt = gslc_PageFindElemById(&gui,E_PG_WAYPOINTS,E_ELEM_WYPT_ID_GPS_LAT);
+        snprintf(s_buf,MAX_STR,"LAT:%f%c",GPS.latitudeDegrees,GPS.lat);
+        gslc_ElemSetTxtStr(&gui,pPositionTxt,(const char*)s_buf);
+        gslc_ElemSetRedraw(&gui,pPositionTxt,GSLC_REDRAW_FULL);
   
-      pPositionTxt = gslc_PageFindElemById(&gui,E_PG_WAYPOINTS,E_ELEM_WYPT_ID_GPS_LAT);
-      snprintf(s_buf,MAX_STR,"LAT:%f%c",GPS.latitudeDegrees,GPS.lat);
-      gslc_ElemSetTxtStr(&gui,pPositionTxt,(const char*)s_buf);
-      gslc_ElemSetRedraw(&gui,pPositionTxt,GSLC_REDRAW_FULL);
-
-      pPositionTxt = gslc_PageFindElemById(&gui,E_PG_WAYPOINTS,E_ELEM_WYPT_ID_GPS_LON);
-      snprintf(s_buf,MAX_STR,"LON:%f%c",GPS.longitudeDegrees,GPS.lon);
-      gslc_ElemSetTxtStr(&gui,pPositionTxt,(const char*)s_buf);
-      gslc_ElemSetRedraw(&gui,pPositionTxt,GSLC_REDRAW_FULL);
-    }
-    gslc_ElemSetCol(&gui,pGuiElement,GSLC_COL_BLACK,box_color,GSLC_COL_BLUE);
-    gslc_ElemSetRedraw(&gui,pGuiElement,GSLC_REDRAW_FULL);      
+        pPositionTxt = gslc_PageFindElemById(&gui,E_PG_WAYPOINTS,E_ELEM_WYPT_ID_GPS_LON);
+        snprintf(s_buf,MAX_STR,"LON:%f%c",GPS.longitudeDegrees,GPS.lon);
+        gslc_ElemSetTxtStr(&gui,pPositionTxt,(const char*)s_buf);
+        gslc_ElemSetRedraw(&gui,pPositionTxt,GSLC_REDRAW_FULL);
+      }
+      gslc_ElemSetCol(&gui,pGuiElement,GSLC_COL_BLACK,box_color,GSLC_COL_BLUE);
+      gslc_ElemSetRedraw(&gui,pGuiElement,GSLC_REDRAW_FULL);    
+    }  
   }
 
   if(ros_heartbeat.periodic()){
@@ -155,12 +193,45 @@ void loop() {
     }
   }
 
-  if(radio.available()){
-    radio_rx();
+  if(radio_on == true){
+    if(radio.available()){
+      radio_rx();
+    }
   }
    
   if(gui_timer.periodic()){
     gslc_Update(&gui);
+  }
+
+  if(!screen_blank_active){
+    if(millis() - last_touch_time > INACTIVITY_TIMEOUT_MS){
+      // Disable screen
+      screen_blank_active = true;
+      analogWrite(SCREEN_LITE_PIN,SCREEN_OFF);
+      gslc_SetTouchTrigFunc(&gui,&CbTouchTrig);
+    }
+  }
+  else{
+    if(millis() - last_touch_time > (2*INACTIVITY_TIMEOUT_MS)){
+      if(radio_on == true){
+        // Shutdown radio
+        if(radio.sleep()){
+          Serial.println("Power down radio");
+          radio_on = false;
+        }
+      }
+      if(gps_on == true){
+        GPS.standby();
+        gps_on = false;
+      }
+
+      digitalWrite(PIN_LED,0);
+      while(screen_blank_active){
+        // wake up once per second to check for touchscreen press
+        Watchdog.sleep(1000);
+        gslc_Update(&gui);
+      }
+    }
   }
 
   finish_time = micros();

@@ -96,7 +96,7 @@ def publish_message():
 
 def rosinfo_server():
     #datalink = Serial(DEVICE, baudrate=BAUDRATE, timeout=2)
-    link = txfer.SerialTransfer('/dev/ttyACM0')
+    link = txfer.SerialTransfer('/dev/ttyACM1')
     link.open()
 
     while not rospy.is_shutdown():
